@@ -1,25 +1,61 @@
-/output
-/out
-/data
-/configs/pointcloud/pretrained
-/scripts
-/src/encoder/unet.py
-/create_dataset.py
-/metrics.ods
-/processed_data.pkl
+# Evita di caricare file e cartelle temporanee, cache, modelli, build, output, ecc.
 
-/README.md
-build
-.vscode
-.pytest_cache
-.cache
-*.pyc
-*.pt
+# PyCharm / IntelliJ
+.idea/
+*.iml
+
+# Python
+__pycache__/
+*.py[cod]
 *.so
 *.o
+*.out
+*.log
+
+# Ambiente virtuale
+.venv/
+env/
+venv/
+
+# Jupyter Notebook
+.ipynb_checkpoints/
+
+# Cache pytest
+.pytest_cache/
+.cache/
+
+# File di dati e output pesanti
+*.pkl
+*.pt
+*.npy
+*.npz
+*.h5
+*.onnx
+*.ckpt
 *.prof
+*.zip
+*.tar
+*.tar.gz
+
+*.pkl
+*.pyc
+.idea/
+README.md
+src/encoder/unet.py
+
+# File specifici del tuo progetto
+processed_data.pkl
+output/
+data/
+build/
+logs/
+metrics.ods
+
+# Sistema operativo
+.DS_Store
+Thumbs.db
+
+# File temporanei
+*.swp
 .nfs*
-/src/utils/libmcubes/mcubes.cpp
-/src/utils/libsimplify/simplify_mesh.cpp
-/src/utils/libsimplify/build
-lsf.*
+
