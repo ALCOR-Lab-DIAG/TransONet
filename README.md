@@ -1,43 +1,35 @@
 # TransConvONet: Lightweight Transformer Occupancy Networks for 3D virtual object reconstruction
-[**Paper**](https://arxiv.org/abs/2011.05813)
+[**Paper**](GRAPP_2025_396_CR.pdf)
 
 ![teaser](media/pipeline.png "teaser")
 
 This repository contains the implementation of the paper:
 
-Dynamic Plane Convolutional Occupancy Networks  
-[Stefan Lionar*](https://github.com/splionar), [Daniil Emtsev*](https://github.com/daniil-777), [Dusan Svilarkovic*](https://github.com/dsvilarkovic), and [Songyou Peng](https://pengsongyou.github.io/)  
-**WACV 2021**  
+Lightweight Transformer Occupancy Networks for 3D virtual object reconstruction  
+Claudia Melis Tonti [https://github.com/Allyjuke96] and Irene Amerini
+**GRAPP 2025**  
 
 If you find our code or paper useful, please consider citing us:
 
 ```bibtex
-@inproceedings{Lionar2021WACV,
- title = {Dynamic Plane Convolutional Occupancy Networks},
- author={Stefan Lionar and Daniil Emtsev and Dusan Svilarkovic and Songyou Peng},
- booktitle = {Winter Conference on Applications of Computer Vision (WACV)},
- year = {2021}}
+@INPROCEEDINGS{Tonti2025-ay,
+  title           = "Lightweight transformer occupancy networks for {3D}
+                     virtual object reconstruction",
+  booktitle       = "Proceedings of the 20th International Joint Conference on
+                     Computer Vision, Imaging and Computer Graphics Theory and
+                     Applications",
+  author          = "Tonti, Claudia and Amerini, Irene",
+  publisher       = "SCITEPRESS - Science and Technology Publications",
+  pages           = "408--414",
+  year            =  2025,
+  conference      = "20th International Conference on Computer Graphics Theory
+                     and Applications",
+  location        = "Porto, Portugal"
+}
 ```
 
 ## Installation
-First you have to make sure that you have all dependencies in place.
-The simplest way to do so, is to use [anaconda](https://www.anaconda.com/). 
 
-You can create an anaconda environment called `dyn_conv_onet` using
-```
-conda env create -f environment.yaml
-conda activate dyn_conv_onet
-```
-**Note**: if the `pytorch_scatter` is not working, you can install it following [the official instruction](https://github.com/rusty1s/pytorch_scatter#pytorch-140).
-```
-pip install torch-scatter==latest+cu101 -f https://pytorch-geometric.com/whl/torch-1.4.0.html
-```
-
-Next, compile the extension modules.
-You can do this via
-```
-python setup.py build_ext --inplace
-```
  
 ## Dataset
 
