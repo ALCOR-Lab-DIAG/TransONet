@@ -22,4 +22,4 @@ build
 /src/utils/libmcubes/mcubes.cpp
 /src/utils/libsimplify/simplify_mesh.cpp
 /src/utils/libsimplify/build
-lsf.*
+lsf.*processed_data.pkl
