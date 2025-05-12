@@ -1,0 +1,39 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="hazhardous" type="docker-deploy" factoryName="dockerfile" singleton="false" server-name="Docker">
+    <deployment type="dockerfile">
+      <settings>
+        <option name="imageTag" value="hazhardous" />
+        <option name="buildCliOptions" value="--build-arg root_password=alcor2022" />
+        <option name="containerName" value="hazh_1" />
+        <option name="publishAllPorts" value="true" />
+        <option name="commandLineOptions" value=" --gpus all -u 1000:1000 --privileged --shm-size=20gb -p 8083:6006" />
+        <option name="sourceFilePath" value="Dockerfile" />
+        <option name="volumeBindings">
+          <list>
+            <DockerVolumeBindingImpl>
+              <option name="containerPath" value="/workspace" />
+              <option name="hostPath" value="$PROJECT_DIR$" />
+            </DockerVolumeBindingImpl>
+            <DockerVolumeBindingImpl>
+              <option name="containerPath" value="/dataset" />
+              <option name="hostPath" value="/mnt/HDD1TB/melistonti/ShapeNet" />
+            </DockerVolumeBindingImpl>
+            <DockerVolumeBindingImpl>
+              <option name="containerPath" value="/hazh_dataset" />
+              <option name="hostPath" value="/mnt/HDD1TB/melistonti/hazh_dataset" />
+            </DockerVolumeBindingImpl>
+            <DockerVolumeBindingImpl>
+              <option name="containerPath" value="/synthetic_room_dataset" />
+              <option name="hostPath" value="/mnt/HDD1TB/melistonti/synthetic_baggage_dataset" />
+            </DockerVolumeBindingImpl>
+            <DockerVolumeBindingImpl>
+              <option name="containerPath" value="/watertight" />
+              <option name="hostPath" value="/mnt/HDD1TB/melistonti/watertight" />
+            </DockerVolumeBindingImpl>
+          </list>
+        </option>
+      </settings>
+    </deployment>
+    <method v="2" />
+  </configuration>
+</component>

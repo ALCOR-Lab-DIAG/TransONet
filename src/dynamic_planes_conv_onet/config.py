@@ -29,7 +29,8 @@ def get_model(cfg, device=None, dataset=None, **kwargs):
     decoder_kwargs = cfg['model']['decoder_kwargs']
     encoder_kwargs = cfg['model']['encoder_kwargs']
     padding = cfg['data']['padding']
-
+    print('encoder: {}'.format(encoder))
+    print('decoder: {}'.format(decoder))
     decoder = models.decoder_dict[decoder](
         dim=dim, z_dim=z_dim, c_dim=c_dim, padding=padding,
         **decoder_kwargs
@@ -87,7 +88,7 @@ def get_trainer(model, optimizer, cfg, device, **kwargs):
     return trainer
 
 
-def get_generator(model, cfg, device, **kwargs):
+def get_generator(model, cfg, optimizer, device, **kwargs):
     ''' Returns the generator object.
 
     Args:
@@ -98,6 +99,7 @@ def get_generator(model, cfg, device, **kwargs):
 
     generator = generation.Generator3D(
         model,
+        optimizer,
         device=device,
         threshold=cfg['test']['threshold'],
         resolution0=cfg['generation']['resolution_0'],

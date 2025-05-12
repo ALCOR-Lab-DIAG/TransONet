@@ -6,6 +6,7 @@ from src.layers import (
 )
 from src.common import normalize_coordinate, normalize_3d_coordinate, coordinate2index, positional_encoding, normalize_dynamic_plane_coordinate
 import pdb
+from src.utils.others import SineLayer
 
 class LocalDecoder(nn.Module):
     ''' Decoder with conditional batch normalization (CBN) class.
@@ -55,6 +56,7 @@ class LocalDecoder(nn.Module):
 
         if not leaky:
             self.actvn = F.relu
+            # self.actvn = SineLayer()
         else:
             self.actvn = lambda x: F.leaky_relu(x, 0.2)
 
@@ -187,7 +189,9 @@ class DynamicLocalDecoder(nn.Module):
         self.fc_out = nn.Linear(hidden_size, 1)
 
         if not leaky:
-            self.actvn = F.relu
+            # self.actvn = F.relu
+            self.actvn_up = SineLayer(in_features=6, out_features=6)
+            self.actvn_c = SineLayer(in_features=hidden_size, out_features=hidden_size)
         else:
             self.actvn = lambda x: F.leaky_relu(x, 0.2)
 
@@ -220,7 +224,8 @@ class DynamicLocalDecoder(nn.Module):
         z = z_plane.reshape(batch_size, 2, 4, 4)
         net = self.conv_layers[0](z)
         for conv_layer in self.conv_layers[1:]:
-            net = conv_layer(self.actvn(net))
+            # net = conv_layer(self.actvn(net))
+            net = conv_layer(self.actvn_up(net))
 
         out_dict = {
             'xz': net[:, :32],
@@ -231,7 +236,7 @@ class DynamicLocalDecoder(nn.Module):
 
 
     def forward(self, p, z_plane, c_plane, **kwargs):
-
+        #print("p shape:{}".format(p.shape))
         if self.z_dim > 0:
             # I do the reshaping
             z_plane = self.upsample_latent_code_to_feature_map(z_plane)
@@ -247,12 +252,12 @@ class DynamicLocalDecoder(nn.Module):
         if self.c_dim != 0:
             c = 0
             # print("just c_plane", type(c_plane))
-            # print("c_plane", c_plane['c_mat'])
+            #print("c_plane", c_plane.keys())
             num_planes = c_plane['c_mat'].size()[1]
 
-            for l in range(num_planes):
-                c += self.sample_dynamic_plane_feature(p, c_plane['plane{}'.format(l)], c_plane['c_mat'][:,l])
-
+            # for l in range(num_planes):
+            #     c += self.sample_dynamic_plane_feature(p, c_plane['plane{}'.format(l)], c_plane['c_mat'][:,l])
+            c+= self.sample_dynamic_plane_feature(p, c_plane['planes'], c_plane['c_mat'])
             c = c.transpose(1, 2)
 
         p = p.float()
@@ -271,7 +276,8 @@ class DynamicLocalDecoder(nn.Module):
 
             net = self.blocks[i](net)
 
-        out = self.fc_out(self.actvn(net))
+        # out = self.fc_out(self.actvn(net))
+        out = self.fc_out(self.actvn_c(net))
         out = out.squeeze(-1)
 
         return out
@@ -327,6 +333,7 @@ class HybridLocalDecoder(nn.Module):
 
         if not leaky:
             self.actvn = F.relu
+            # self.actvn = Sine()
         else:
             self.actvn = lambda x: F.leaky_relu(x, 0.2)
 
@@ -429,5 +436,3 @@ class HybridLocalDecoder(nn.Module):
         out = out.squeeze(-1)
 
         return out
-
-

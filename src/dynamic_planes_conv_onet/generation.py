@@ -3,6 +3,8 @@ import torch.optim as optim
 from torch import autograd
 import numpy as np
 from tqdm import trange
+import open3d as o3d
+
 import trimesh
 from src.utils import libmcubes
 from src.common import make_3d_grid
@@ -35,7 +37,7 @@ class Generator3D(object):
         simplify_nfaces (int): number of faces the mesh should be simplified to
     '''
 
-    def __init__(self, model, points_batch_size=100000,
+    def __init__(self, model, optimizer, points_batch_size=100000,
                  threshold=0.5, refinement_step=0, device=None,
                  resolution0=16, upsampling_steps=3,
                  with_normals=False, padding=0.1, sample=False,
@@ -51,6 +53,7 @@ class Generator3D(object):
         self.padding = padding
         self.sample = sample
         self.simplify_nfaces = simplify_nfaces
+        self.optimizer = optimizer
 
     def generate_mesh(self, data, return_stats=True):
         ''' Generates the output mesh.
@@ -73,14 +76,15 @@ class Generator3D(object):
             if semantic_map is not None:
                 c = self.model.encoder(semantic_map.to(device))
             else:
-                c = self.model.encode_inputs(inputs)
+                #c, _ = self.model.encode_inputs(inputs)
+                c = self.model.encode_inputs(inputs, self.optimizer)
 
         stats_dict['time (encode inputs)'] = time.time() - t0
 
         z = self.model.get_z_from_prior((1,), sample=self.sample).to(device)
         #q_z = self.model.infer_z(None, None, c, inputs=inputs, **kwargs)
         #z = q_z.rsample()
- 
+        #print(z.shape)
         mesh = self.generate_from_latent(z, c, stats_dict=stats_dict, **kwargs)
 
         if return_stats:
@@ -126,7 +130,8 @@ class Generator3D(object):
             if semantic_map is not None:	
                 c = self.model.encoder(semantic_map.to(device))	
             else:	
-                c = self.model.encode_inputs(inputs)
+                #c,_ = self.model.encode_inputs(inputs)
+                c = self.model.encode_inputs(inputs, self.optimizer)
         stats_dict['time (encode inputs)'] = time.time() - t0
         z = self.model.get_z_from_prior((1,), sample=self.sample).to(device)
         mesh = self.generate_from_latent(z, c, stats_dict=stats_dict, **kwargs)	
@@ -166,6 +171,7 @@ class Generator3D(object):
             values = self.eval_points(pointsf, z, c, **kwargs).cpu().numpy()
             value_grid = values.reshape(nx, nx, nx)
         else:
+            print('MISE')
             mesh_extractor = MISE(
                 self.resolution0, self.upsampling_steps, threshold)
 
@@ -190,6 +196,7 @@ class Generator3D(object):
         stats_dict['time (eval points)'] = time.time() - t0
 
         mesh = self.extract_mesh(value_grid, z, c, stats_dict=stats_dict)
+        #print(mesh)
         return mesh
 
     def generate_from_rotated_latent(self, z, c=None, stats_dict={}, **kwargs):
@@ -243,6 +250,7 @@ class Generator3D(object):
             z (tensor): latent code z
             c (tensor): latent conditioned code c
         '''
+        #print(p.shape, self.points_batch_size)
         p_split = torch.split(p, self.points_batch_size)
         occ_hats = []
 
@@ -253,7 +261,7 @@ class Generator3D(object):
             occ_hats.append(occ_hat.squeeze(0).detach().cpu())
 
         occ_hat = torch.cat(occ_hats, dim=0)
-
+        #print(p_split[0].shape)
         return occ_hat
 
     def extract_mesh(self, occ_hat, z, c=None, stats_dict=dict()):
@@ -277,7 +285,7 @@ class Generator3D(object):
             occ_hat_padded, threshold)
         stats_dict['time (marching cubes)'] = time.time() - t0
         # Strange behaviour in libmcubes: vertices are shifted by 0.5
-        vertices -= 0.5
+        #vertices -= 0.5
         # Undo padding
         vertices -= 1
         # Normalize to bounding box
@@ -295,7 +303,7 @@ class Generator3D(object):
 
         else:
             normals = None
-
+        print(len(vertices))
         # Create mesh
         mesh = trimesh.Trimesh(vertices, triangles,
                                vertex_normals=normals,
@@ -445,3 +453,132 @@ class Generator3D(object):
             pointcloud_model = torch.cat([pointcloud_model, torch.ones(point_cloud_size,1).to(self.device)], dim = 1)
             pointcloud_model_rotated =torch.mm(pointcloud_model, self.rotation_matrix.to(self.device))
             return pointcloud_model_rotated[:,0:3]
+        
+    def generate_pointcloud(self, data, return_stats=False):
+        ''' Generates the output mesh.
+
+        Args:
+            data (tensor): data tensor
+            return_stats (bool): whether stats should be returned
+        '''
+        self.model.eval()
+        device = self.device
+        stats_dict = {}
+
+        inputs = data.get('inputs', torch.empty(1, 0)).to(device)
+        kwargs = {}
+
+        # Encode inputs
+        t0 = time.time()
+        with torch.no_grad():
+            semantic_map = data.get('semantic_map', None)
+            if semantic_map is not None:
+                c = self.model.encoder(semantic_map.to(device))
+            else:
+                #c, _ = self.model.encode_inputs(inputs)
+                c = self.model.encode_inputs(inputs, self.optimizer)
+
+        stats_dict['time (encode inputs)'] = time.time() - t0
+
+        z = self.model.get_z_from_prior((1,), sample=self.sample).to(device)
+        #q_z = self.model.infer_z(None, None, c, inputs=inputs, **kwargs)
+        #z = q_z.rsample()
+        #print(z.shape)
+        pointcloud = self.generate_pointcloud_from_latent(z, c, stats_dict=stats_dict, **kwargs)
+
+        if return_stats:
+            return pointcloud, stats_dict
+        else:
+            return pointcloud
+    
+    def generate_pointcloud_from_latent(self, z, c=None, stats_dict={}, **kwargs):
+        ''' Generates mesh from latent.
+
+        Args:
+            z (tensor): latent code z
+            c (tensor): latent conditioned code c
+            stats_dict (dict): stats dictionary
+        '''
+        threshold = np.log(self.threshold) - np.log(1. - self.threshold)
+
+        t0 = time.time()
+        # Compute bounding box size
+        box_size = 1 + self.padding
+
+        # Shortcut
+        if self.upsampling_steps == 0:
+            nx = self.resolution0
+            pointsf = box_size * make_3d_grid(
+                (-0.5,)*3, (0.5,)*3, (nx,)*3
+            )
+            values = self.eval_points(pointsf, z, c, **kwargs).cpu().numpy()
+            value_grid = values.reshape(nx, nx, nx)
+        else:
+            mesh_extractor = MISE(
+                self.resolution0, self.upsampling_steps, threshold)
+
+            points = mesh_extractor.query()
+
+            while points.shape[0] != 0:
+                # Query points
+                pointsf = torch.FloatTensor(points).to(self.device)
+                # Normalize to bounding box
+                pointsf = pointsf / mesh_extractor.resolution
+                pointsf = box_size * (pointsf - 0.5)
+                # Evaluate model and update
+                values = self.eval_points(
+                    pointsf, z, c, **kwargs).cpu().numpy()
+                values = values.astype(np.float64)
+                mesh_extractor.update(points, values)
+                points = mesh_extractor.query()
+
+            value_grid = mesh_extractor.to_dense()
+
+        # Extract mesh
+        stats_dict['time (eval points)'] = time.time() - t0
+
+        mesh = self.extract_pointcloud(value_grid, z, c, stats_dict=stats_dict)
+        #print(mesh)
+        return mesh
+    
+    def extract_pointcloud(self, occ_hat, z, c=None, stats_dict=dict()):
+        ''' Extracts the mesh from the predicted occupancy grid.
+
+        Args:
+            occ_hat (tensor): value grid of occupancies
+            z (tensor): latent code z
+            c (tensor): latent conditioned code c
+            stats_dict (dict): stats dictionary
+        '''
+        # Some short hands
+        n_x, n_y, n_z = occ_hat.shape
+        box_size = 1 + self.padding
+        threshold = np.log(self.threshold) - np.log(1. - self.threshold)
+        # Make sure that mesh is watertight
+        t0 = time.time()
+        occ_hat_padded = np.pad(
+            occ_hat, 1, 'constant', constant_values=-1e6)
+        vertices, _ = libmcubes.marching_cubes(
+            occ_hat_padded, threshold)
+        stats_dict['time (marching cubes)'] = time.time() - t0
+        # Strange behaviour in libmcubes: vertices are shifted by 0.5
+        vertices -= 0.5
+        # Undo padding
+        vertices -= 1
+        # Normalize to bounding box
+        vertices /= np.array([n_x-1, n_y-1, n_z-1])
+        vertices = box_size * (vertices - 0.5)
+
+        # mesh_pymesh = pymesh.form_mesh(vertices, triangles)
+        # mesh_pymesh = fix_pymesh(mesh_pymesh)
+
+        # Estimate normals if needed
+
+        # Create mesh
+        pcd = o3d.geometry.PointCloud()
+        pcd.points = o3d.utility.Vector3dVector(vertices)
+        
+
+        return pcd
+    
+    

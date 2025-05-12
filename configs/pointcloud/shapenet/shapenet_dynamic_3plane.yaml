@@ -3,8 +3,8 @@ data:
   input_type: pointcloud
   classes: null
   input_type: pointcloud
-  path: data/ShapeNet
-  watertight_path: data/watertight
+  path: ../dataset/
+  watertight_path: ../watertight
   pointcloud_n: 3000
   pointcloud_noise: 0.005
   points_subsample: 2048
@@ -19,10 +19,10 @@ model:
   encoder: dynamic_pointnet_local_pool
   encoder_kwargs:
     hidden_dim: 32
-    plane_resolution: 64
+    plane_resolution: 32
     unet: True
     unet_kwargs:
-      depth: 4
+      depth: 3
       merge_mode: concat
       start_filts: 32
     n_channels: 3
@@ -34,23 +34,24 @@ model:
   c_dim: 32
   z_dim: 0
 training:
-  out_dir: out/pointcloud/shapenet_dynamic_3plane
-  batch_size: 2
+  out_dir: out/pointcloud/shapenet_dynamic_3plane_final
+  batch_size: 64
   similarity: True
   model_selection_metric: iou
   model_selection_mode: maximize
-  print_every: 1000
-  visualize_every: 10000
-  validate_every: 10000
-  checkpoint_every: 2000
-  backup_every: 10000
-  n_workers: 8
-  n_workers_val: 4
+  print_every: 200
+  visualize_every: 200
+  validate_every: 200
+  checkpoint_every: 200
+  backup_every: 200
+  n_workers: 4
+  n_workers_val: 2
 test:
   threshold: 0.2
   eval_mesh: true
   eval_pointcloud: false
-  model_file: model_best.pt
+  model_file: /workspace/out/pointcloud/shapenet_dynamic_3plane_final/model_best.pt
+  #model_file: None
 generation:
   batch_size: 100000
   vis_n_outputs: 2

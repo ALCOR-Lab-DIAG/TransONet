@@ -52,9 +52,14 @@ class Trainer(BaseTrainer):
             DEGREES (integer): degree range in which object is going to be rotated
         '''
         self.model.train()
+        torch.autograd.set_detect_anomaly(True)
         self.optimizer.zero_grad()
+        #loss, plane_loss = self.compute_loss(cfg, data, DEGREES = DEGREES)
         loss = self.compute_loss(cfg, data, DEGREES = DEGREES)
-        loss.backward()
+        #print('plane loss shape: '+str(plane_loss.shape))
+
+        loss.backward(retain_graph=True)
+
         self.optimizer.step()
 
         return loss.item()
@@ -87,7 +92,7 @@ class Trainer(BaseTrainer):
         semantic_map = data.get('semantic_map', None)
         with torch.no_grad():
             elbo, rec_error, kl = self.model.compute_elbo(
-                points, occ, inputs, semantic_map, **kwargs)
+                points, occ, inputs, semantic_map, self.optimizer, **kwargs)
 
         eval_dict['loss'] = -elbo.mean().item()
         eval_dict['rec_error'] = rec_error.mean().item()
@@ -97,7 +102,7 @@ class Trainer(BaseTrainer):
         batch_size = points.size(0)
 
         with torch.no_grad():
-            p_out = self.model(points_iou, inputs, 
+            p_out = self.model(points_iou, inputs, self.optimizer,
                                sample=self.eval_sample, semantic_map=semantic_map, **kwargs)
 
         occ_iou_np = (occ_iou >= 0.5).cpu().numpy()
@@ -143,7 +148,7 @@ class Trainer(BaseTrainer):
 
         kwargs = {}
         with torch.no_grad():
-            p_r = self.model(p, inputs, sample=self.eval_sample, semantic_map=semantic_map, **kwargs)
+            p_r = self.model(p, inputs, self.optimizer, sample=self.eval_sample, semantic_map=semantic_map, **kwargs)
 
         occ_hat = p_r.probs.view(batch_size, *shape)
         voxels_out = (occ_hat >= self.threshold).cpu().numpy()
@@ -202,12 +207,15 @@ class Trainer(BaseTrainer):
 
         semantic_map = data.get('semantic_map', None)
         pl = None
+        plane_loss = None
         if semantic_map is not None:
             c = self.model.encoder(semantic_map.to(device))
         else:
-            c = self.model.encode_inputs(inputs)
+            c, plane_loss = self.model.encode_inputs(inputs, self.optimizer)
+            #c, plane_loss = self.model.encode_inputs(inputs)
 
             if hasattr(self.model.encoder, 'plane_parameters'):
+                #print('pl')
                 pl = self.model.encoder.plane_parameters
 
 
@@ -224,8 +232,9 @@ class Trainer(BaseTrainer):
         logits = self.model.decode(p, z, c, **kwargs).logits
         loss_i = F.binary_cross_entropy_with_logits(logits, occ, reduction='none')
         if (cfg['training']['similarity']):
-            triplet_loss_normals = self.triplet_loss_normals(pl)        
-            loss = loss * self.beta_vae + loss_i.sum(-1).mean() + 10 * triplet_loss_normals.sum(-1).mean()
+            triplet_loss_normals = self.triplet_loss_normals(pl)
+            plane_loss = plane_loss.clone()
+            loss = loss * self.beta_vae + loss_i.sum(-1).mean() + 10 * triplet_loss_normals.sum(-1).mean() + plane_loss
         else:
             loss = loss_i.sum(-1).mean()
         return loss
