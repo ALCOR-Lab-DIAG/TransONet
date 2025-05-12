@@ -3,8 +3,8 @@ data:
   input_type: pointcloud
   classes: null
   input_type: pointcloud
-  path: data/ShapeNet
-  watertight_path: data/watertight
+  path: ../dataset/ShapeNet
+  watertight_path: ../dataset/watertight
   pointcloud_n: 3000
   pointcloud_noise: 0.005
   points_subsample: 2048

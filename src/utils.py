@@ -39,6 +39,7 @@ class FCPlanenet(nn.Module):
         self.fc_c = nn.Linear(hidden_dim, c_dim)
 
         self.actvn = nn.ReLU()
+        # self.actvn = Sine()
         self.pool = maxpool
 
         # MLP
@@ -55,6 +56,7 @@ class FCPlanenet(nn.Module):
         batch_size, T, D = p.size()
 
         # Simple Point Net
+        print('FCPlaneNet')
         net = self.fc_pos(p)
         net = self.fc_0(self.actvn(net))
         pooled = self.pool(net, dim=1, keepdim=True).expand(net.size())
@@ -120,6 +122,7 @@ class FCPlanenet_conv1d(nn.Module):
         self.to_planes = nn.Linear(hidden_dim, n_channels * 3)
 
         self.actvn = nn.ReLU()
+        # self.actvn = Sine()
 
     def forward(self, p):
 
@@ -175,6 +178,7 @@ class ResnetBlockConv1d(nn.Module):
         self.fc_0 = nn.Conv1d(size_in, size_h, 1)
         self.fc_1 = nn.Conv1d(size_h, size_out, 1)
         self.actvn = nn.ReLU()
+        # self.actvn = Sine()
 
         if size_in == size_out:
             self.shortcut = None
@@ -229,3 +233,4 @@ class AffineLayer(nn.Module):
         b = self.fc_b(x).view(batch_size, 1, 3)
         out = p @ A + b
         return out
+

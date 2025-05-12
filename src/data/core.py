@@ -16,7 +16,6 @@ class Field(object):
 
     def load(self, data_path, idx, category):
         ''' Loads a data point.
-
         Args:
             data_path (str): path to data file
             idx (int): index of data point
@@ -26,7 +25,6 @@ class Field(object):
 
     def check_complete(self, files):
         ''' Checks if set is complete.
-
         Args:
             files: files
         '''
@@ -40,7 +38,6 @@ class Shapes3dDataset(data.Dataset):
     def __init__(self, dataset_folder, fields, split=None,
                  categories=None, no_except=True, transform=None):
         ''' Initialization of the the 3D shape dataset.
-
         Args:
             dataset_folder (str): dataset folder
             fields (dict): dictionary of fields
@@ -62,18 +59,18 @@ class Shapes3dDataset(data.Dataset):
                           if os.path.isdir(os.path.join(dataset_folder, c))]
 
         # Read metadata file
-        print("dataset_folder", dataset_folder)
+        #print("dataset_folder", dataset_folder)
         metadata_file = os.path.join(dataset_folder, 'metadata.yaml')
 
         if os.path.exists(metadata_file):
             with open(metadata_file, 'r') as f:
-                self.metadata = yaml.load(f)
+                self.metadata = yaml.load(f, yaml.loader.SafeLoader)
         else:
             self.metadata = {
                 c: {'id': c, 'name': 'n/a'} for c in categories
             } 
-        print("categories", categories)
-        print("metadata", self.metadata)
+        #print("categories", categories)
+        #print("metadata", self.metadata)
         # Set index
         for c_idx, c in enumerate(categories):
             # print("c", c)
@@ -84,6 +81,7 @@ class Shapes3dDataset(data.Dataset):
         self.models = []
         for c_idx, c in enumerate(categories):
             subpath = os.path.join(dataset_folder, c)
+            #print(os.listdir(subpath))
             if not os.path.isdir(subpath):
                 logger.warning('Category %s does not exist in dataset.' % c)
 
@@ -112,7 +110,6 @@ class Shapes3dDataset(data.Dataset):
 
     def __getitem__(self, idx):
         ''' Returns an item of the dataset.
-
         Args:
             idx (int): ID of data point
         '''
@@ -127,12 +124,15 @@ class Shapes3dDataset(data.Dataset):
         for field_name, field in self.fields.items():
             try:
                 field_data = field.load(model_path, idx, c_idx)
-            except Exception:
+                
+            except Exception as e:
                 if self.no_except:
-                    logger.warn(
-                        'Error occured when loading field %s of model %s'
-                        % (field_name, model)
-                    )
+                    #logger.warn(
+                    #    'Error occured when loading field %s of model %s'
+                    #    % (field_name, model)
+                    #)
+                    logging.exception('Error occured when loading field %s of model %s'
+                        % (field_name, model))
                     return None
                 else:
                     raise
@@ -156,7 +156,6 @@ class Shapes3dDataset(data.Dataset):
 
     def test_model_complete(self, category, model):
         ''' Tests if model is complete.
-
         Args:
             model (str): modelname
         '''
@@ -174,7 +173,6 @@ class Shapes3dDataset(data.Dataset):
 def collate_remove_none(batch):
     ''' Collater that puts each data field into a tensor with outer dimension
         batch size.
-
     Args:
         batch: batch
     '''

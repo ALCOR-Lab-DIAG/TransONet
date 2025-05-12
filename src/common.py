@@ -88,7 +88,7 @@ def compute_iou(occ1, occ2):
     # Convert to boolean values
     occ1 = (occ1 >= 0.5)
     occ2 = (occ2 >= 0.5)
-
+    #print(occ1, occ2)
     # Compute IOU
     area_union = (occ1 | occ2).astype(np.float32).sum(axis=-1)
     area_intersect = (occ1 & occ2).astype(np.float32).sum(axis=-1)
@@ -352,7 +352,10 @@ def normalize_coordinate(p, padding=0.1, plane='xz'):
     return xy_new
 
 def normalize_dynamic_plane_coordinate(p, change_basis_matrix_normalizer, padding=0.1):
-    device = 'cuda' if (torch.cuda.is_available() == True) else 'cpu'    
+    device = 'cuda' if (torch.cuda.is_available() == True) else 'cpu'
+    #print(device)
+    #device = 'cpu'
+    #print('normalize'+ device)   
     change_basis_matrix = change_basis_matrix_normalizer[:,:3]
     normalizer = (change_basis_matrix_normalizer[:,3,0] + 0.05).to(device)
 

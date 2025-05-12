@@ -3,8 +3,8 @@ data:
   input_type: pointcloud
   classes: null
   input_type: pointcloud
-  path: data/ShapeNet
-  watertight_path: data/watertight
+  path: ../dataset/ShapeNet
+  watertight_path: ../dataset/watertight
   pointcloud_n: 3000
   pointcloud_noise: 0.005
   points_subsample: 2048
@@ -34,7 +34,7 @@ model:
   c_dim: 32
   z_dim: 0
 training:
-  out_dir: out/pointcloud/shapenet_dynamic_3plane
+  out_dir: out/pointcloud/shapenet_dynamic_3plane_final
   batch_size: 2
   similarity: True
   model_selection_metric: iou
@@ -50,7 +50,7 @@ test:
   threshold: 0.2
   eval_mesh: true
   eval_pointcloud: false
-  model_file: model_best.pt
+  model_file: /home/alcor/students/melis_tonti/dynamic_plane_convolutional_onet/configs/pointcloud/pretrained/shapenet_dynamic_3plane_positional_encoding_no_simloss.pt
 generation:
   batch_size: 100000
   vis_n_outputs: 2

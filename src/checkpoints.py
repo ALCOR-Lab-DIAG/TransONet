@@ -43,6 +43,7 @@ class CheckpointIO(object):
         Args:
             filename (str): name of saved module dictionary
         '''
+        #print(filename)
         if is_url(filename):
             return self.load_url(filename)
         else:
@@ -54,12 +55,12 @@ class CheckpointIO(object):
         Args:
             filename (str): name of saved module dictionary
         '''
-
+        #print(filename)
         if not os.path.isabs(filename):
             filename = os.path.join(self.checkpoint_dir, filename)
 
         if os.path.exists(filename):
-            print(filename)
+            #print(filename)
             print('=> Loading checkpoint from local file...')
             state_dict = torch.load(filename)
             scalars = self.parse_state_dict(state_dict)
@@ -73,7 +74,7 @@ class CheckpointIO(object):
         Args:
             url (str): url to saved model
         '''
-        print(url)
+        #print(url)
         print('=> Loading checkpoint from url...')
         state_dict = model_zoo.load_url(url, progress=True)
         scalars = self.parse_state_dict(state_dict)
@@ -87,8 +88,9 @@ class CheckpointIO(object):
     '''
 
         for k, v in self.module_dict.items():
+            #print(len(v), type(v))
             if k in state_dict:
-                v.load_state_dict(state_dict[k])
+                v.load_state_dict(state_dict[k])#,strict=False)
             else:
                 print('Warning: Could not find %s in checkpoint!' % k)
         scalars = {k: v for k, v in state_dict.items()

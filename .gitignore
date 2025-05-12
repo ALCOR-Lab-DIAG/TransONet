@@ -1,6 +1,14 @@
 /output
 /out
 /data
+/configs/pointcloud/pretrained
+/scripts
+/src/encoder/unet.py
+/create_dataset.py
+/metrics.ods
+/processed_data.pkl
+
+/README.md
 build
 .vscode
 .pytest_cache

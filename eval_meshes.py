@@ -13,6 +13,9 @@ from math import sin,cos,radians,sqrt
 import random	
 from mpl_toolkits.mplot3d import Axes3D	
 import matplotlib.pyplot as plt	
+from collections import defaultdict
+import traceback
+
 def rotate_points(pointcloud_model,rotations):	
     ## https://en.wikipedia.org/wiki/Rotation_matrix	
     (x_angle, y_angle, z_angle) = rotations	
@@ -47,6 +50,9 @@ device = torch.device("cuda" if is_cuda else "cpu")
 eval_rotations = args.eval_rotations	
 # Shorthands
 out_dir = cfg['training']['out_dir']
+vis_n_outputs = cfg['generation']['vis_n_outputs']
+if vis_n_outputs is None:
+    vis_n_outputs = -1
 generation_dir = os.path.join(out_dir, cfg['generation']['generation_dir'])
 if not args.eval_input:
     out_file = os.path.join(generation_dir, 'eval_meshes_full.pkl')
@@ -94,6 +100,7 @@ test_loader = torch.utils.data.DataLoader(
 # Evaluate all classes
 eval_dicts = []
 print('Evaluating meshes...')
+model_counter = defaultdict(int)
 for it, data in enumerate(tqdm(test_loader)):
     if data is None:
         print('Invalid data.')
@@ -142,46 +149,49 @@ for it, data in enumerate(tqdm(test_loader)):
         'modelname': modelname,
     }
     eval_dicts.append(eval_dict)
-
+    c_it = model_counter[category_id]
+    if c_it < vis_n_outputs:
     # Evaluate mesh
-    if cfg['test']['eval_mesh']:
-        mesh_file = os.path.join(mesh_dir, '%s.off' % modelname)
+        if cfg['test']['eval_mesh']:
+            mesh_file = os.path.join(mesh_dir, '%s.obj' % modelname)
 
-        if(eval_rotations):	
-            rotation_out_file = os.path.join(mesh_dir, '%s_rotation.pckl' % modelname)	
-            rotations = None	
-            with open(rotation_out_file, 'rb') as f:	
-                rotations = pickle.load(f)	
-            pointcloud_tgt = rotate_points(pointcloud_model = pointcloud_tgt,rotations = rotations)	
-            normals_tgt = rotate_points(pointcloud_model = normals_tgt,rotations = rotations)	
-            points_tgt = rotate_points(pointcloud_model = points_tgt,rotations = rotations)	
+            if(eval_rotations):	
+                rotation_out_file = os.path.join(mesh_dir, '%s_rotation.pckl' % modelname)	
+                rotations = None	
+                with open(rotation_out_file, 'rb') as f:	
+                    rotations = pickle.load(f)	
+                pointcloud_tgt = rotate_points(pointcloud_model = pointcloud_tgt,rotations = rotations)	
+                normals_tgt = rotate_points(pointcloud_model = normals_tgt,rotations = rotations)	
+                points_tgt = rotate_points(pointcloud_model = points_tgt,rotations = rotations)	
 
-        if os.path.exists(mesh_file):
-            try:
-                mesh = trimesh.load(mesh_file, process=False)
-                eval_dict_mesh = evaluator.eval_mesh(
-                    mesh, pointcloud_tgt, normals_tgt, points_tgt, occ_tgt)
-                for k, v in eval_dict_mesh.items():
-                    eval_dict[k + ' (mesh)'] = v
-            except Exception as e:
-                print("Error: Could not evaluate mesh: %s" % mesh_file)
-        else:
-            print('Warning: mesh does not exist: %s' % mesh_file)
+            if os.path.exists(mesh_file):
+                try:
+                    mesh = trimesh.load(mesh_file, process=False)
+                    eval_dict_mesh = evaluator.eval_mesh(
+                        mesh, pointcloud_tgt, normals_tgt, points_tgt, occ_tgt)
+                    for k, v in eval_dict_mesh.items():
+                        eval_dict[k + ' (mesh)'] = v
+                except Exception as e:
+                    print(traceback.format_exc())
+                    print("Error: Could not evaluate mesh: %s" % mesh_file)
+            else:
+                print('Warning: mesh does not exist: %s' % mesh_file)
 
-    # Evaluate point cloud
-    if cfg['test']['eval_pointcloud']:
-        pointcloud_file = os.path.join(
-            pointcloud_dir, '%s.ply' % modelname)
+        # Evaluate point cloud
+        if cfg['test']['eval_pointcloud']:
+            pointcloud_file = os.path.join(
+                pointcloud_dir, '%s.ply' % modelname)
 
-        if os.path.exists(pointcloud_file):
-            pointcloud = load_pointcloud(pointcloud_file)
-            eval_dict_pcl = evaluator.eval_pointcloud(
-                pointcloud, pointcloud_tgt)
-            for k, v in eval_dict_pcl.items():
-                eval_dict[k + ' (pcl)'] = v
-        else:
-            print('Warning: pointcloud does not exist: %s'
-                    % pointcloud_file)
+            if os.path.exists(pointcloud_file):
+                pointcloud = load_pointcloud(pointcloud_file)
+                eval_dict_pcl = evaluator.eval_pointcloud(
+                    pointcloud, pointcloud_tgt)
+                for k, v in eval_dict_pcl.items():
+                    eval_dict[k + ' (pcl)'] = v
+            else:
+                print('Warning: pointcloud does not exist: %s'
+                        % pointcloud_file)
+    model_counter[category_id] += 1
 
 # Create pandas dataframe and save
 eval_df = pd.DataFrame(eval_dicts)
@@ -189,7 +199,7 @@ eval_df.set_index(['idx'], inplace=True)
 eval_df.to_pickle(out_file)
 
 # Create CSV file  with main statistics
-eval_df_class = eval_df.groupby(by=['class name']).mean()
+eval_df_class = eval_df.groupby(by=['class id']).mean()
 eval_df_class.to_csv(out_file_class)
 
 # Print results

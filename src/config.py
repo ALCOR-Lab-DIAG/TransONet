@@ -19,8 +19,9 @@ def load_config(path, default_path=None):
         default_path (bool): whether to use default path
     '''
     # Load configuration from file itself
+    
     with open(path, 'r') as f:
-        cfg_special = yaml.load(f)
+       cfg_special = yaml.load(f, yaml.loader.SafeLoader)
 
     # Check if we should inherit from a config
     inherit_from = cfg_special.get('inherit_from')
@@ -31,7 +32,7 @@ def load_config(path, default_path=None):
         cfg = load_config(inherit_from, default_path)
     elif default_path is not None:
         with open(default_path, 'r') as f:
-            cfg = yaml.load(f)
+            cfg = yaml.load(f, yaml.loader.SafeLoader)
     else:
         cfg = dict()
 
@@ -68,6 +69,7 @@ def get_model(cfg, device=None, dataset=None):
         dataset (dataset): dataset
     '''
     method = cfg['method']
+
     model = method_dict[method].config.get_model(
         cfg, device=device, dataset=dataset)
     return model
@@ -90,7 +92,7 @@ def get_trainer(model, optimizer, cfg, device):
 
 
 # Generator for final mesh extraction
-def get_generator(model, cfg, device):
+def get_generator(model, cfg, optimizer, device):
     ''' Returns a generator instance.
 
     Args:
@@ -99,7 +101,7 @@ def get_generator(model, cfg, device):
         device (device): pytorch device
     '''
     method = cfg['method']
-    generator = method_dict[method].config.get_generator(model, cfg, device)
+    generator = method_dict[method].config.get_generator(model, cfg, optimizer, device)
     return generator
 
 
@@ -133,6 +135,7 @@ def get_dataset(mode, cfg, return_idx=False, return_category=False):
         fields = method_dict[method].config.get_data_fields(mode, cfg)
         # Input fields
         inputs_field = get_inputs_field(mode, cfg)
+        #print(inputs_field)
         if inputs_field is not None:
             fields['inputs'] = inputs_field
 

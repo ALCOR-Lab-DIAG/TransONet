@@ -1,4 +1,4 @@
-inherit_from: configs/pointcloud/pretrained/shapenet_dynamic_7plane.yaml
+inherit_from: configs/pointcloud/shapenet/shapenet_dynamic_7plane.yaml
 model:
   encoder_latent: null
   decoder: dynamic_simple_local

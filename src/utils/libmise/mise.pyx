@@ -70,7 +70,7 @@ cdef class MISE:
 
                     assert(self.voxels.size() == vec_to_idx(Vector3D(i, j, k), resolution_0))
                     self.voxels.push_back(voxel)
-
+        
         # Create initial grid points
         self.grid_points.reserve((resolution_0 + 1) * (resolution_0 + 1) * (resolution_0 + 1))
         for i in range(resolution_0 + 1):

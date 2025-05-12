@@ -10,14 +10,15 @@ import numpy
 
 # Get the numpy include directory.
 numpy_include_dir = numpy.get_include()
+#print(numpy_include_dir)
 
 # Extensions
 # pykdtree (kd tree)
 pykdtree = Extension(
     'src.utils.libkdtree.pykdtree.kdtree',
     sources=[
-        'src/utils/libkdtree/pykdtree/kdtree.c',
-        'src/utils/libkdtree/pykdtree/_kdtree_core.c'
+        './src/utils/libkdtree/pykdtree/kdtree.c',
+        './src/utils/libkdtree/pykdtree/_kdtree_core.c'
     ],
     language='c',
     extra_compile_args=['-std=c99', '-O3', '-fopenmp'],
@@ -28,9 +29,9 @@ pykdtree = Extension(
 mcubes_module = Extension(
     'src.utils.libmcubes.mcubes',
     sources=[
-        'src/utils/libmcubes/mcubes.pyx',
-        'src/utils/libmcubes/pywrapper.cpp',
-        'src/utils/libmcubes/marchingcubes.cpp'
+        './src/utils/libmcubes/mcubes.pyx',
+        './src/utils/libmcubes/pywrapper.cpp',
+        './src/utils/libmcubes/marchingcubes.cpp'
     ],
     language='c++',
     extra_compile_args=['-std=c++11'],
@@ -41,7 +42,7 @@ mcubes_module = Extension(
 triangle_hash_module = Extension(
     'src.utils.libmesh.triangle_hash',
     sources=[
-        'src/utils/libmesh/triangle_hash.pyx'
+        './src/utils/libmesh/triangle_hash.pyx'
     ],
     libraries=['m']  # Unix-like specific
 )
@@ -50,7 +51,7 @@ triangle_hash_module = Extension(
 mise_module = Extension(
     'src.utils.libmise.mise',
     sources=[
-        'src/utils/libmise/mise.pyx'
+        './src/utils/libmise/mise.pyx'
     ],
 )
 
@@ -58,7 +59,7 @@ mise_module = Extension(
 simplify_mesh_module = Extension(
     'src.utils.libsimplify.simplify_mesh',
     sources=[
-        'src/utils/libsimplify/simplify_mesh.pyx'
+        './src/utils/libsimplify/simplify_mesh.pyx'
     ]
 )
 
@@ -66,7 +67,7 @@ simplify_mesh_module = Extension(
 voxelize_module = Extension(
     'src.utils.libvoxelize.voxelize',
     sources=[
-        'src/utils/libvoxelize/voxelize.pyx'
+        './src/utils/libvoxelize/voxelize.pyx'
     ],
     libraries=['m']  # Unix-like specific
 )
@@ -84,7 +85,7 @@ ext_modules = [
 setup(
     ext_modules=cythonize(ext_modules),
     include_dirs=[numpy_include_dir],
-    cmdclass={
-        'build_ext': BuildExtension
-    }
+    #cmdclass={
+    #    'build_ext': BuildExtension
+    #}
 )

@@ -9,8 +9,8 @@ p = extractor.query()
 i = 0
 
 while p.shape[0] != 0:
-    print(i)
-    print(p)
+    #print(i)
+    #print(p)
     v = 2 * (p.sum(axis=-1) > 2).astype(np.float64) - 1
     extractor.update(p, v)
     p = extractor.query()
@@ -18,7 +18,7 @@ while p.shape[0] != 0:
     if (i >= 8):
         break
 
-print(extractor.to_dense())
+#print(extractor.to_dense())
 # p, v = extractor.get_points()
 # print(p)
 # print(v)

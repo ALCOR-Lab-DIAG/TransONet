@@ -13,7 +13,6 @@ class IndexField(Field):
     ''' Basic index field.'''
     def load(self, model_path, idx, category):
         ''' Loads the index field.
-
         Args:
             model_path (str): path to model
             idx (int): ID of data point
@@ -34,7 +33,6 @@ class CategoryField(Field):
     ''' Basic category field.'''
     def load(self, model_path, idx, category):
         ''' Loads the category field.
-
         Args:
             model_path (str): path to model
             idx (int): ID of data point
@@ -53,15 +51,12 @@ class CategoryField(Field):
 # 3D Fields
 class PointsField(Field):
     ''' Point Field.
-
     It provides the field to load point data. This is used for the points
     randomly sampled in the bounding volume of the 3D shape.
-
     Args:
         file_name (str): file name
         transform (list): list of transformations which will be applied to the
             points tensor
-
     '''
     def __init__(self, file_name, transform=None, unpackbits=False, multi_files=None):
         self.file_name = file_name
@@ -71,7 +66,6 @@ class PointsField(Field):
 
     def load(self, model_path, idx, category):
         ''' Loads the data point.
-
         Args:
             model_path (str): path to model
             idx (int): ID of data point
@@ -110,10 +104,8 @@ class PointsField(Field):
 
 class PointCloudField(Field):
     ''' Point cloud field.
-
     It provides the field used for point cloud data. These are the points
     randomly sampled on the mesh.
-
     Args:
         file_name (str): file name
         transform (list): list of transformations applied to data points
@@ -125,7 +117,6 @@ class PointCloudField(Field):
 
     def load(self, model_path, idx, category):
         ''' Loads the data point.
-
         Args:
             model_path (str): path to model
             idx (int): ID of data point
@@ -150,7 +141,7 @@ class PointCloudField(Field):
 
         if self.transform is not None:
             data = self.transform(data)
-
+        #print('normals: '+ str(data['normals'].shape))
         return data
 
     def check_complete(self, files):
@@ -166,11 +157,9 @@ class PointCloudField(Field):
 # You need to specify collate_fn to make it work with a data laoder
 class MeshField(Field):
     ''' Mesh field.
-
     It provides the field used for mesh data. Note that, depending on the
     dataset, it produces variable length output, so that you need to specify
     collate_fn to make it work with a data loader.
-
     Args:
         file_name (str): file name
         transform (list): list of transforms applied to data points
@@ -181,7 +170,6 @@ class MeshField(Field):
 
     def load(self, model_path, idx, category):
         ''' Loads the data point.
-
         Args:
             model_path (str): path to model
             idx (int): ID of data point
@@ -208,4 +196,3 @@ class MeshField(Field):
         '''
         complete = (self.file_name in files)
         return complete
-
