@@ -1,5 +1,6 @@
 /output
 /out
+/build
 /data
 /configs/pointcloud/pretrained
 /scripts
@@ -9,7 +10,6 @@
 /processed_data.pkl
 
 /README.md
-build
 .vscode
 .pytest_cache
 .cache
