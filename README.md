@@ -1,5 +1,5 @@
-# Dynamic Plane Convolutional Occupancy Networks
-[**Paper**](https://arxiv.org/abs/2011.05813) | [**Supplementary**](https://polybox.ethz.ch/index.php/s/ehK175BH7oVYnxy#pdfviewer) | [**Video**](https://screencast-o-matic.com/watch/cYXOcaLKJz)
+# TransConvONet: Lightweight Transformer Occupancy Networks for 3D virtual object reconstruction
+[**Paper**](https://arxiv.org/abs/2011.05813)
 
 ![teaser](media/pipeline.png "teaser")
 
