@@ -31,7 +31,14 @@ If you find our code or paper useful, please consider citing us:
 ## Installation
 
 Install [Docker](https://docs.docker.com/engine/install/) or [Podman](https://podman.io/docs/installation). If you use podman you just need to substitute docker command with podman command.
-Create a Docker image using [DockerFile](Dockerfile)
+
+Configure [DockerFile](Dockerfile) at line 47 and 48
+```
+ARG USERNAME=yourusername
+ARG USER_UID=youruserid
+```
+
+Create a Docker image 
 
 ```
 docker build -t DOCKERHUB_ACCOUNT/docker_img_name:latest . #make sure to stay in the root folder
