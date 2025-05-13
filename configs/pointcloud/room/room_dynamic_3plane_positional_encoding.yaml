@@ -3,7 +3,7 @@ inherit_from: ./configs/pointcloud/room/room_dynamic_3plane.yaml
 data:
   classes: ['rooms_04', 'rooms_05', 'rooms_06', 'rooms_07', 'rooms_08']
   input_type: pointcloud
-  path: /media/alcor/Storage/melistonti/synthetic_room_dataset
+  path: /path/to/synthetic_room_dataset
   pointcloud_n: 10000
   pointcloud_noise: 0.005
   points_subsample: 2048
@@ -53,9 +53,8 @@ training:
 test:
   threshold: 0.2
   eval_mesh: true
-  eval_pointcloud: false
-  #model_file: https://polybox.ethz.ch/index.php/s/ehK175BH7oVYnxy/download?path=%2Froom&files=room_dynamic_3plane_positional_encoding.pt
-  model_file: /home/alcor/students/melis_tonti/phd_model/out/pointcloud/shapenet_dynamic_3plane_final/model_best.pt
+  eval_pointcloud: false  
+  model_file: out/pointcloud/shapenet_dynamic_3plane_final/model_best.pt
 generation:
   batch_size: 100000
   vis_n_outputs: 2

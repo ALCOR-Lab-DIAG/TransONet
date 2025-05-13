@@ -44,8 +44,8 @@ RUN sed -i 's/#PasswordAuthentication yes/PasswordAuthentication yes/' /etc/ssh/
 EXPOSE 22
 
 # create non-root user
-ARG USERNAME=clameto
-ARG USER_UID=1000
+ARG USERNAME=yourusername
+ARG USER_UID=youruserid
 ARG USER_GID=$USER_UID
 
 RUN groupadd --gid $USER_GID $USERNAME \
