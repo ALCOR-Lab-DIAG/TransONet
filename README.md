@@ -30,7 +30,7 @@ If you find our code or paper useful, please consider citing us:
 
 ## Installation
 
-Install [Docker](https://docs.docker.com/engine/install/) or [Podman](https://podman.io/docs/installation). If you use podman you just need to substitute docker command with podman command.
+Install [Docker](https://docs.docker.com/engine/install/) or [Podman](https://podman.io/docs/installation). If you use podman you just need to replace "docker" command with "podman" command.
 
 Configure [DockerFile](Dockerfile) at line 47 and 48
 ```
