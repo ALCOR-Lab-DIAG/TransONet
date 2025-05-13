@@ -17,9 +17,7 @@ import pdb
 from tqdm import tqdm, trange
 from torchinfo import summary
 from torchviz import make_dot
-#from thop import profile
-#from thop import clever_format
-#from thop.vision.basic_hooks import count_convNd
+
 from src.models.fast_quant import fast_quant
 
 os.environ["CUDA_VISIBLE_DEVICES"] = "0"
@@ -69,8 +67,7 @@ shutil.copyfile(args.config, os.path.join(out_dir, 'config.yaml'))
 
 # Dataset
 train_dataset = config.get_dataset('train', cfg)
-#for i in train_dataset:
-#    print(i['inputs.normals'].shape)
+
 val_dataset = config.get_dataset('val', cfg, return_idx=True)
 
 train_loader = torch.utils.data.DataLoader(
@@ -94,57 +91,16 @@ vis_loader = torch.utils.data.DataLoader(
 model_counter = defaultdict(int)
 data_vis_list = []
 inputs=next(iter(train_loader))
-#print([inputs['points'].size(), inputs['inputs'].size()])
+
 # Model
 model = config.get_model(cfg, device=device, dataset=train_dataset)
-#model = fast_quant(model, with_noisy_quant=True, percentile= True, search_mean= True, search_noisy=True)
-#custom_ops = {torch.nn.Conv2d: count_convNd}
-#macs, params = profile(model, inputs=(torch.rand(64, 2048, 3).to(device), torch.rand(64, 3000, 3).to(device), torch.rand((1,)).to(device)), custom_ops=custom_ops)
-#macs, params = clever_format([macs, params], "%.3f")
-#print(macs, params)
-#print(model)
-#print("macs: " + str(macs))
+
 logger = SummaryWriter(os.path.join(out_dir, 'logs'))
-#size = tuple((64, 2048, 3, 64, 3000, 3, 1))
-#print(size)
-#make_dot(model(inputs['points'].to(device), inputs['inputs'].to(device)), params=dict(list(model.named_parameters()))).render(os.path.join(out_dir,"dp_d3_sc_cp_torchviz"), format="png")
-#logger.add_graph(model,(torch.rand(64, 2048, 3).to(device), torch.rand(64, 3000, 3).to(device), torch.rand((1,)).to(device)))
-#logger.close()
-#summary(model,[inputs['points'].to(device).size(), inputs['inputs'].to(device).size(), (1,)], depth = 4)
-# l = [module for module in model.modules() if isinstance(module, nn.Conv2d) or \
-#                                             isinstance(module, nn.Conv1d) or \
-#                                             isinstance(module, nn.Conv3d)]
-# #print(l)
-# parameters_to_prune = []
-# #w=0
-# for m in l:
-#     parameters_to_prune += [(m, 'weight')]
-#     #print(parameters_to_prune)
-#     w = 100. * float(torch.sum(m.weight == 0))/ float(m.weight.nelement())
-#     w = m.weight.shape
-#     #print(str(m)+' -> '+str(w))
-# parameters_to_prune = tuple(parameters_to_prune)
-# print(parameters_to_prune[0])
-# prune.global_unstructured(
-#     parameters_to_prune,
-#     pruning_method=prune.L1Unstructured,
-#     amount=0.8,
-# )
-# l_pruned = [module for module in model.modules() if isinstance(module, nn.Conv2d) or \
-#                                             isinstance(module, nn.Conv1d) or \
-#                                             isinstance(module, nn.Conv3d)]
-# pruned_parameters = []
-# w=0
-# for m in l_pruned:
-#     pruned_parameters += [(m, 'weight')]
-#     #print(pruned_parameters)
-#     w = 100. * float(torch.sum(m.weight == 0))/ float(m.weight.nelement())
-#     print("Sparsity in {}: {:.2f}%".format(str(m), w))
 
 
 # Build a data dictionary for visualization
 iterator = iter(vis_loader)
-#print(len(vis_loader))
+
 for i in trange(len(vis_loader)):
     data_vis = next(iterator)
     idx = data_vis['idx'].item()
@@ -165,7 +121,6 @@ for i in trange(len(vis_loader)):
 
 # Intialize training
 optimizer = optim.Adam(model.parameters(), lr=1e-4)
-#optimizer = optim.Adam(model.parameters(), lr=1e-3)
 trainer = config.get_trainer(model, optimizer, cfg, device=device)
 
 checkpoint_io = CheckpointIO(out_dir, model=model, optimizer=optimizer)
@@ -209,35 +164,13 @@ print('output path: ', cfg['training']['out_dir'])
 #while True:
 for epoch in range(267): #epoch 13 scenes
     epoch_it += 1
-#     scheduler.step()
-#     t = torch.cuda.get_device_properties(0).total_memory
-#     r = torch.cuda.memory_reserved(0)
-#     a = torch.cuda.memory_allocated(0)
-#     f = r - a  # free inside reserved
-#     print(f'total (MB)    : {t / 1e6}')
-#     print(f'free (MB)     : {f / 1e6}')
-#     print(f'allocated (MB) : {a / 1e6}')
-#     print(f'reserved (MB) : {r / 1e6}')
-    #torch.cuda.memory_summary(device=None, abbreviated=False)
+
     for batch in tqdm(train_loader):
         it += 1
         loss = trainer.train_step(cfg, batch)
         logger.add_scalar('train/loss', loss, it)
-        #if pl:
-        #    pl = pl.detach().cpu().numpy()
-        #    shape = pl.shape
-        #    #print(pl[1][0][0])
-        #    #print(pl[0][1][0])
-        #    for i in range(shape[0]):
-        #        for j in range(shape[1]):
-        #            logger.add_scalars('planes/plane'+str(j), {'a':pl[i][j][0]}, it)
-        #            logger.add_scalars('planes/plane'+str(j), {'b':pl[i][j][1]}, it)
-        #            logger.add_scalars('planes/plane'+str(j), {'c':pl[i][j][2]}, it)
-            
-        # Print output/home/alcor/students/melis_tonti/new_model/configs/pointcloud/shapenet/shapenet_dynamic_3plane_final.yaml
+        
         if print_every > 0 and (it % print_every) == 0:
-            # print('[Epoch %02d] it=%03d, loss=%.4f, time: %.2f'
-            #       % (epoch_it, it, loss, time.time() - t0))
             t = datetime.datetime.now()
             print('[Epoch %02d] it=%03d, loss=%.4f, time: %.2fs, %02d:%02d'
                      % (epoch_it, it, loss, time.time() - t0, t.hour, t.minute))
@@ -313,12 +246,3 @@ for epoch in range(267): #epoch 13 scenes
             checkpoint_io.save('model.pt', epoch_it=epoch_it, it=it,
                                loss_val_best=metric_val_best)
             exit(3)
-
-    # t = torch.cuda.get_device_properties(0).total_memory
-    # r = torch.cuda.memory_reserved(0)
-    # a = torch.cuda.memory_allocated(0)
-    # f = r - a  # free inside reserved
-    # print(f'total (MB)    : {t / 1e6}')
-    # print(f'free (MB)     : {f / 1e6}')
-    # print(f'allocated (MB) : {a / 1e6}')
-    # print(f'reserved (MB) : {r / 1e6}')

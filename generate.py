@@ -40,37 +40,14 @@ if vis_n_outputs is None:
 
 # Dataset
 dataset = config.get_dataset('test', cfg, return_idx=True)
-#print(dataset)
+
 
 # Model
 model = config.get_model(cfg, device=device, dataset=dataset)
-#model = config.get_model(cfg, device=device, dataset=train_dataset)
-#macs, params = profile(model, inputs=(torch.rand(64, 2048, 3).to(device), torch.rand(64, 3000, 3).to(device), torch.rand((1,)).to(device)))
-#macs, params = clever_format([macs, params], "%.3f")
-#print(macs, params)
-#print(model)
-#print("macs: " + str(macs))
-#l = [module for module in model.modules() if isinstance(module, nn.Conv2d) or \
-#                                            isinstance(module, nn.Conv1d) or \
-#                                            isinstance(module, nn.Conv3d)]
-##print(l)
-#parameters_to_prune = []
-##w=0
-#for m in l:
-#    parameters_to_prune += [(m, 'weight')]
-#    #print(parameters_to_prune)
-#    #w = 100. * float(torch.sum(m.weight == 0))/ float(m.weight.nelement())
-#    #print(str(m)+' -> '+str(w))
-#parameters_to_prune = tuple(parameters_to_prune)
-##print(parameters_to_prune[0])
-#prune.global_unstructured(
-#    parameters_to_prune,
-#    pruning_method=prune.L1Unstructured,
-#    amount=0.8,
-#)
+
 
 checkpoint_io = CheckpointIO(out_dir, model=model)
-#checkpoint_io = CheckpointIO('out/pointcloud/shapenet_dynamic_3plane_final/model_best.pt', model=model)
+
 print(cfg['test']['model_file'])
 checkpoint_io.load(cfg['test']['model_file'])
 
@@ -81,7 +58,7 @@ generator = config.get_generator(model, cfg, optimizer, device=device)
 # Determine what to generate
 generate_mesh = cfg['generation']['generate_mesh']
 generate_pointcloud = cfg['generation']['generate_pointcloud']
-#print(generate_pointcloud)
+
 
 if generate_mesh and not hasattr(generator, 'generate_mesh'):
     generate_mesh = False

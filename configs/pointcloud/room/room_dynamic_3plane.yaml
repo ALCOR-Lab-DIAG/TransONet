@@ -22,7 +22,7 @@ model:
   encoder_kwargs:
     hidden_dim: 32
     plane_resolution: 128
-    unet: True
+    unet: False
     unet_kwargs:
       depth: 5
       merge_mode: concat

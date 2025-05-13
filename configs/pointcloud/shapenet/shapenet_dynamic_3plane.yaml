@@ -20,7 +20,7 @@ model:
   encoder_kwargs:
     hidden_dim: 32
     plane_resolution: 32
-    unet: True
+    unet: False
     unet_kwargs:
       depth: 3
       merge_mode: concat
@@ -50,7 +50,7 @@ test:
   threshold: 0.2
   eval_mesh: true
   eval_pointcloud: false
-  model_file: /workspace/out/pointcloud/shapenet_dynamic_3plane_final/model_best.pt
+  model_file: /out/pointcloud/shapenet_dynamic_3plane_final/model_best.pt
   #model_file: None
 generation:
   batch_size: 100000

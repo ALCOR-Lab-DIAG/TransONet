@@ -8,7 +8,6 @@ import torch.nn as nn
 from src.models.common import DropPath, Mlp
 from torch.nn.init import trunc_normal_
 
-#from ..encoder.unet import conv3x3, conv1x1, upconv2x2
 
 
 def attention_pool(tensor, pool, hw_shape, has_cls_embed=True, norm=None):

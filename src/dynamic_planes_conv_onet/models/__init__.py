@@ -7,8 +7,6 @@ from src.dynamic_planes_conv_onet.models import decoder
 # Decoder dictionary
 decoder_dict = {
     'dynamic_simple_local': decoder.DynamicLocalDecoder,
-    'hybrid_simple_local': decoder.HybridLocalDecoder,
-    'simple_local': decoder.LocalDecoder,
 }
 
 
@@ -50,11 +48,9 @@ class DynamicPlanesConvolutionalOccupancyNetwork(nn.Module):
         pl = None
         fea_loss = None
         if semantic_map is not None:
-            #print('this encoder')
             c = self.encoder(semantic_map.to(self._device))
         else:
-            #print('new encoder')
-            #c, fea_loss = self.encode_inputs(inputs)
+
             c = self.encode_inputs(inputs, optimizer)
             if hasattr(self.encoder, 'plane_parameters'):
                 pl = self.encoder.plane_parameters
