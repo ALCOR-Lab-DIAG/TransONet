@@ -94,58 +94,15 @@ This part will explain how to modify `configs/pointcloud/shapenet_dynamic_3plane
 
 #### **Loss Similarity**
 
-To run with similarity loss you should put the `training.similarity = True` On the opposite, put it to `False`
+To run with similarity loss you should put the `training.similarity = True` On the opposite, put it to `False` 
 
-
-#### **Positional Encoding**
-
-To enable the positional encoding put `model.encoder_kwargs.pos_encoding=True` and `model.decoder_kwargs.pos_encoding=True`. 
-
-
-### **Rotation augmentation**
-To train a new network with random rotations on input, run:
-```
-python train_rotate.py CONFIG.yaml
-```
-### Using `generate_rotation.py` for rotated objects
-
-Before calling `generate_rotation.py`, it is mandatory and convenient to make your own config file and run it when calling for both `generate.py` and `eval_meshes.py`.
-Example for your file should look like this:
-
-```
-inherit_from: configs/pointcloud/shapenet_dynamic_3plane.yaml
-test:
-  model_file: <.pt model file path>
-model : 
-  encoder_kwargs:
-    hidden_dim: 32
-    n_channels: 3
-generation:
-  generation_dir: generation_3plane_45_degrees
-degrees: 45
-```
-
-Where you explicitly define `generation.generation_dir` for specifying the name of the folder you want to save your reconstructions too (in this case, models will be saved in `out/pointcloud/dpoc/generation_3plane_45_degrees`), and `degrees` for rotation range you wish to include. Of course `test.model_file` path also needs to be changed in order if you want to generate with your own model.
 
 Finally, call:
 
 `python generate_rotation.py configs/pointcloud/CONFIG_NAME.yaml --no-cuda`
 
-### Using `eval_meshes.py` for rotation evaluating
-For evaluating generated object, you have to option:
-* reconstructed rotated object vs rotated object
-* reconstructed rotated object vs non-rotated object
-
-**reconstructed rotated object vs rotated object** [recommended]
-
-In this case, call:
-
-`python eval_meshes.py configs/pointcloud/CONFIG_NAME.yaml --no-cuda --eval-rotations`
-
-
-**reconstructed rotated object vs non-rotated object** 
-
-In this case, call: 
+### Using `eval_meshes.py` for evaluating
+For evaluating generated object, you have to option: 
 
 `python eval_meshes.py configs/pointcloud/CONFIG_NAME.yaml --no-cuda`
 
