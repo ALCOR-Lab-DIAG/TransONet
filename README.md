@@ -1,7 +1,7 @@
 # TransConvONet: Lightweight Transformer Occupancy Networks for 3D virtual object reconstruction
 [**Paper**](GRAPP_2025_396_CR.pdf)
 
-![teaser](media/pipeline.png "teaser")
+![teaser](media/TransConvONet.png "teaser")
 
 This repository contains the implementation of the paper:
 
@@ -30,6 +30,26 @@ If you find our code or paper useful, please consider citing us:
 
 ## Installation
 
+Install [Docker](https://docs.docker.com/engine/install/) or [Podman](https://podman.io/docs/installation). If you use podman you just need to substitute docker command with podman command.
+
+Configure [DockerFile](Dockerfile) at line 47 and 48
+```
+ARG USERNAME=yourusername
+ARG USER_UID=youruserid
+```
+
+Create a Docker image 
+
+```
+docker build -t DOCKERHUB_ACCOUNT/docker_img_name:latest . #make sure to stay in the root folder
+```
+Run Docker container
+
+```
+docker run -it --device nvidia.com/gpu=0 --shm-size 8gb --build-arg root_password=your_pwd -v /path/to/project:/workspace  /path/to/shapenet/dataset:/dataset   /path/to/synthetic_room_dataset:/synthetic_room_dataset  /path/to/other/folders:/watertight --name container_name docker_img_name
+```
+The watertight dataset indicates the Ground Truth dataset, you may want to add GT synthetic_room_dataset 
+To access the container
  
 ## Dataset
 
@@ -43,14 +63,10 @@ Or by calling the command
 bash scripts/download_shape_net_data.sh
 ```
 ### Synthetic room 
-You can download the synthetic room dataset by calling the command
-```
-bash scripts/download_room_data.sh
-```
-If you use this dataset, please cite [Convolutional Occupancy Networks](https://pengsongyou.github.io/conv_onet) paper.
+You can download the synthetic room dataset by downloading it from this [link](https://drive.google.com/drive/u/0/folders/1Q90gkAUHKyT4-Lj1klPKbqlLLw87tVn8)
 
-## Usage
-When you have installed all binary dependencies and obtained the preprocessed data, you are ready to run our pre-trained models and train new models from scratch.
+### Configuration
+Choose one of the configuration .yaml files in the [configs/pointcloud folder](configs/pointcloud). Replace the "path" value with the path to the dataset (synthetic_room_dataset for rooms config file and ShapeNet dataset for shapenet config file), if there is a watertight path replace the value with the path to the watertight datset. If you have a pretrained model replace the "model_file" value with the path to the .pt file of the pretrained model, otherwise type "None"
 
 ### Mesh Generation
 To generate meshes using a trained model, use
@@ -58,17 +74,6 @@ To generate meshes using a trained model, use
 python generate.py CONFIG.yaml
 ```
 where you replace `CONFIG.yaml` with the correct config file. Our configurations can be found in configs folder.
-
-**Use a pre-trained model**  
-The easiest way is to use a pre-trained model. You can do this by using one of the config files under the `pointcloud` folder and downloading pretrained models from this [link](https://polybox.ethz.ch/index.php/s/ehK175BH7oVYnxy).
-
-For example, for 3D reconstruction from noisy point cloud with our 3-plane model on the synthetic room dataset, you can simply run:
-```
-python generate.py configs/pointcloud/shapenet/shapenet_dynamic_3plane.yaml
-```
-The script will run the generation of meshes from the pretrained model. You can find the outputs in the `out/...` folders
-
-
  
 ### Evaluation
 For evaluation of the models, we provide the script `eval_meshes.py`. You can run it using:
@@ -90,17 +95,6 @@ This part will explain how to modify `configs/pointcloud/shapenet_dynamic_3plane
 #### **Loss Similarity**
 
 To run with similarity loss you should put the `training.similarity = True` On the opposite, put it to `False`
-
-#### **Models**
-
-* To use a **Dynamic Plane** model set `dynamic_pointnet_local_pool: True` in `model.encoder` and `dynamic_simple_local:True` in `model.decoder`
-
-* To use a **Hybrid Dynamic Plane** model set `hybrid_pointnet_local_pool: True` in `model.encoder` and `hybrid_simple_local: True` in `model.decoder`
-
-* To change number of planes predicted, put number of channels you need on argument `model.encoder_kwargs.n_channels`
-* To set up pretrained model to run,  change `training.out_dir` to file path of the model (in `train.py` we use `model.pt` as the pretrained file name).
-
-
 
 
 #### **Positional Encoding**
@@ -125,13 +119,13 @@ test:
 model : 
   encoder_kwargs:
     hidden_dim: 32
-    n_channels: 7
+    n_channels: 3
 generation:
-  generation_dir: generation_7plane_45_degrees
+  generation_dir: generation_3plane_45_degrees
 degrees: 45
 ```
 
-Where you explicitly define `model.encoder_kwargs.n_channels` for number of planes, `generation.generation_dir` for specifying the name of the folder you want to save your reconstructions too (in this case, models will be saved in `out/pointcloud/dpoc/generation_7plane_45_degrees`), and `degrees` for rotation range you wish to include. Of course `test.model_file` path also needs to be changed in order if you want to generate with your own model.
+Where you explicitly define `generation.generation_dir` for specifying the name of the folder you want to save your reconstructions too (in this case, models will be saved in `out/pointcloud/dpoc/generation_3plane_45_degrees`), and `degrees` for rotation range you wish to include. Of course `test.model_file` path also needs to be changed in order if you want to generate with your own model.
 
 Finally, call:
 
@@ -158,4 +152,4 @@ In this case, call:
 
 
 ## Acknowledgement
-The code is inherited from the official repository of [Convolutional Occupancy Networks](https://github.com/autonomousvision/convolutional_occupancy_networks).
+The code is inherited from the official repository of [Dynamic Plane Convolutional Occupancy Networks](https://github.com/dsvilarkovic/dynamic_plane_convolutional_onet).
