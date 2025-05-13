@@ -67,17 +67,6 @@ To generate meshes using a trained model, use
 python generate.py CONFIG.yaml
 ```
 where you replace `CONFIG.yaml` with the correct config file. Our configurations can be found in configs folder.
-
-**Use a pre-trained model**  
-The easiest way is to use a pre-trained model. You can do this by using one of the config files under the `pointcloud` folder and downloading pretrained models from this [link](https://polybox.ethz.ch/index.php/s/ehK175BH7oVYnxy).
-
-For example, for 3D reconstruction from noisy point cloud with our 3-plane model on the synthetic room dataset, you can simply run:
-```
-python generate.py configs/pointcloud/shapenet/shapenet_dynamic_3plane.yaml
-```
-The script will run the generation of meshes from the pretrained model. You can find the outputs in the `out/...` folders
-
-
  
 ### Evaluation
 For evaluation of the models, we provide the script `eval_meshes.py`. You can run it using:
@@ -99,8 +88,6 @@ This part will explain how to modify `configs/pointcloud/shapenet_dynamic_3plane
 #### **Loss Similarity**
 
 To run with similarity loss you should put the `training.similarity = True` On the opposite, put it to `False`
-
-
 
 
 #### **Positional Encoding**
@@ -125,13 +112,13 @@ test:
 model : 
   encoder_kwargs:
     hidden_dim: 32
-    n_channels: 7
+    n_channels: 3
 generation:
-  generation_dir: generation_7plane_45_degrees
+  generation_dir: generation_3plane_45_degrees
 degrees: 45
 ```
 
-Where you explicitly define `model.encoder_kwargs.n_channels` for number of planes, `generation.generation_dir` for specifying the name of the folder you want to save your reconstructions too (in this case, models will be saved in `out/pointcloud/dpoc/generation_7plane_45_degrees`), and `degrees` for rotation range you wish to include. Of course `test.model_file` path also needs to be changed in order if you want to generate with your own model.
+Where you explicitly define `generation.generation_dir` for specifying the name of the folder you want to save your reconstructions too (in this case, models will be saved in `out/pointcloud/dpoc/generation_3plane_45_degrees`), and `degrees` for rotation range you wish to include. Of course `test.model_file` path also needs to be changed in order if you want to generate with your own model.
 
 Finally, call:
 
