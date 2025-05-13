@@ -89,6 +89,12 @@ python train.py CONFIG.yaml
 ```
 For available training options, please take a look at `configs/default.yaml` and `configs/pointcloud/shapenet_dynamic_3plane.yaml`.
 
+If you want to run these commands on CPU add flag to the command:
+
+```
+--no-cuda
+```
+
 ### Configuration file setup for training
 This part will explain how to modify `configs/pointcloud/shapenet_dynamic_3plane.yaml` to run according to your wishes.
 
@@ -96,15 +102,6 @@ This part will explain how to modify `configs/pointcloud/shapenet_dynamic_3plane
 
 To run with similarity loss you should put the `training.similarity = True` On the opposite, put it to `False` 
 
-
-Finally, call:
-
-`python generate_rotation.py configs/pointcloud/CONFIG_NAME.yaml --no-cuda`
-
-### Using `eval_meshes.py` for evaluating
-For evaluating generated object, you have to option: 
-
-`python eval_meshes.py configs/pointcloud/CONFIG_NAME.yaml --no-cuda`
 
 
 
