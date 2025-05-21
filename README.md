@@ -61,9 +61,16 @@ You can download the dataset (73.4 GB) by running the [script](https://github.co
 Or by calling the command 
 ```
 bash scripts/download_shape_net_data.sh
+
 ```
+### ShapeNet ground Truth (watertight)
+You can download in this drive [link](https://drive.google.com/drive/u/0/folders/1BxLbisfr_nZE7nhrx66UC0MBbSuRfYOY)
+
 ### Synthetic room 
-You can download the synthetic room dataset by downloading it from this [link](https://drive.google.com/drive/u/0/folders/1Q90gkAUHKyT4-Lj1klPKbqlLLw87tVn8)
+You can download the synthetic room dataset from this [link](https://drive.google.com/drive/u/0/folders/1Q90gkAUHKyT4-Lj1klPKbqlLLw87tVn8)
+
+### Synthetic room Ground Truth
+You can download the synthetic room ground truth dataset from [here](https://drive.google.com/drive/folders/146yLumnrNaoAgXjk8HHaHUVTTtIOWMpO?usp=sharing)
 
 ### Configuration
 Choose one of the configuration .yaml files in the [configs/pointcloud folder](configs/pointcloud). Replace the "path" value with the path to the dataset (synthetic_room_dataset for rooms config file and ShapeNet dataset for shapenet config file), if there is a watertight path replace the value with the path to the watertight datset. If you have a pretrained model replace the "model_file" value with the path to the .pt file of the pretrained model, otherwise type "None"
